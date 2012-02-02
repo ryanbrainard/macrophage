@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'heroku-api'
+require './lib/macrophage/pages'
 
 enable :sessions
 
@@ -51,7 +52,6 @@ end
 
 get '/login' do
   erb :login
-  #"<form method='post'>API Key: <input name='api_key'/><input type='submit'/></form>"
 end
 
 post '/login' do
