@@ -5,7 +5,6 @@ require './lib/macrophage/pages'
 enable :sessions
 
 post '/apps' do
-  output = ""
   heroku = Heroku::API.new(:api_key => session[:api_key])
   appAction = params[:action]
   params.each do |param|
@@ -15,39 +14,22 @@ post '/apps' do
       if appAction == 'delete'
         begin
           heroku.delete_app(appName)
-          output << "<p>Deleted #{appName}</p>"
+          @message = "Deleted #{appName}"
         rescue
-          output << "<p>Failed to delete #{appName}</p>"
+          @message = "Failed to delete #{appName}"
         end
       end
     end
   end
-  output
+
+  @apps = heroku.get_apps.body
+  erb :apps
 end
 
 get '/apps' do
   heroku = Heroku::API.new(:api_key => session[:api_key])
-
-  apps = heroku.get_apps.body
-
-  output = "<form method='post'>"
-  #output << "<input type='submit' name='action' value='view'>"
-  output << "<input type='submit' name='action' value='delete'>"
-  output << "<table border='1'>"
-
-  output << "<tr><th>Action</th>"
-  apps[0].each { |header| output << "<th>#{header[0]}</th>" }
-  output << "</tr>"
-
-  apps.each do |app|
-    output << "<tr><td><input type='checkbox' name='actionable/#{app['name']}'/></td>"
-    app.each do |prop|
-      output << "<td>#{prop[1]}</td>"
-    end
-    output << "</tr>"
-  end
-  output << "</table>"
-  output << "</form>"
+  @apps = heroku.get_apps.body
+  erb :apps
 end
 
 get '/login' do
