@@ -7,19 +7,31 @@ enable :sessions
 post '/apps' do
   heroku = Heroku::API.new(:api_key => session[:api_key])
   appAction = params[:action]
+
+  successfully_deleted_apps = []
+  failed_deleted_apps = []
+
   params.each do |param|
     if param[0].match(/^actionable\//)
-      appName =  param[0].split('/')[1]
+      app_name =  param[0].split('/')[1]
 
       if appAction == 'delete'
         begin
-          heroku.delete_app(appName)
-          @message = "Deleted #{appName}"
+          heroku.delete_app(app_name)
+          successfully_deleted_apps << app_name
         rescue
-          @message = "Failed to delete #{appName}"
+          failed_deleted_apps << app_name
         end
       end
     end
+  end
+
+  @message = ""
+  unless successfully_deleted_apps.empty?
+    @message << "Successfully deleted " << successfully_deleted_apps.join(", ")
+  end
+  unless failed_deleted_apps.empty?
+    @message << " Failed to delete " << failed_deleted_apps.join(", ")
   end
 
   @apps = heroku.get_apps.body
