@@ -50,7 +50,8 @@ get '/apps' do
 end
 
 get '/login' do
-  "<form method='post'>API Key: <input name='api_key'/><input type='submit'/></form>"
+  erb :login
+  #"<form method='post'>API Key: <input name='api_key'/><input type='submit'/></form>"
 end
 
 post '/login' do
