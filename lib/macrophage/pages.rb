@@ -10,6 +10,7 @@ module Macrophage
 
   Pages = [
       Macrophage::Page.new("Login", "/login"),
-      Macrophage::Page.new("Applications", "/apps")
+      Macrophage::Page.new("Applications", "/apps"),
+      Macrophage::Page.new("Logout", "/logout")
   ]
 end

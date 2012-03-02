@@ -6,7 +6,7 @@ enable :sessions
 
 before do
   unless request.path_info == '/login'
-    unless session[:api_key].length > 0
+    unless (session.has_key? :api_key) && (session[:api_key].length > 0)
       redirect "/login"
     end
   end
@@ -60,6 +60,11 @@ end
 post '/login' do
   session[:api_key] = params[:api_key]
   redirect "/apps"
+end
+
+get '/logout' do
+  session.delete :api_key
+  redirect "/login"
 end
 
 get '/*' do
