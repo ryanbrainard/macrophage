@@ -4,6 +4,15 @@ require './lib/macrophage/pages'
 
 enable :sessions
 
+before do
+  unless request.path_info == '/login'
+    unless session[:api_key].length > 0
+      redirect "/login"
+    end
+  end
+end
+
+
 post '/apps' do
   heroku = Heroku::API.new(:api_key => session[:api_key])
   appAction = params[:action]
