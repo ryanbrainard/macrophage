@@ -1,8 +1,11 @@
 require 'sinatra'
+require 'sinatra/base'
+require 'rack-flash'
 require 'heroku-api'
 require './lib/macrophage/pages'
 
 enable :sessions
+use Rack::Flash
 
 before do
   unless request.path_info == '/login'
@@ -58,12 +61,20 @@ get '/login' do
 end
 
 post '/login' do
-  session[:api_key] = params[:api_key]
-  redirect "/apps"
+  begin
+    heroku = Heroku::API.new(:api_key => params[:api_key])
+    user_info = heroku.get_user.body
+    session[:email] = user_info['email']
+    session[:api_key] = params[:api_key]
+    redirect "/apps"
+  rescue
+    flash[:error] = "Invalid API Key"
+    redirect "/logout"
+  end
 end
 
 get '/logout' do
-  session.delete :api_key
+  session.clear
   redirect "/login"
 end
 

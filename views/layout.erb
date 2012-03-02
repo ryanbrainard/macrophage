@@ -43,13 +43,21 @@
               <li<%= (page.path == request.path) ? " class=\"active\"" : "" %>><a href="<%= page.path %>"><%= page.title %></a></li>
           <% end %>
         </ul>
+        <ul class="nav pull-right">
+          <li><a><%= session[:email]  %></a></li>
+        </ul>
       </div><!--/.nav-collapse -->
     </div>
   </div>
 </div>
 
 <div class="container">
-    <%= yield %>
+  <% if flash[:error] %>
+      <div class="alert alert-error">
+        <%= flash[:error] %>
+      </div>
+  <% end %>
+  <%= yield %>
 </div> <!-- /container -->
 
 <!-- Le javascript
