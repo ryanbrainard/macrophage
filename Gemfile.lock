@@ -1,7 +1,6 @@
 GIT
-  remote: git@github.com:ryanbrainard/heroku.rb.git
-  revision: 41244e9b91b43a38c9a21ae6b76ee51a7bd8d6ac
-  branch: feature/get-user
+  remote: git@github.com:heroku/heroku.rb.git
+  revision: 170aefa1a806b876473aebd878ee119612f66ad3
   specs:
     heroku-api (0.1.0)
       excon (~> 0.9.4)
