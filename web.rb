@@ -15,35 +15,42 @@ before do
   end
 end
 
-
 post '/apps' do
   heroku = Heroku::API.new(:api_key => session[:api_key])
-  appAction = params[:action]
 
-  successfully_deleted_apps = []
-  failed_deleted_apps = []
-
+  async_app_actions = {}
   params.each do |param|
     if param[0].match(/^actionable\//)
       app_name =  param[0].split('/')[1]
-
-      if appAction == 'delete'
-        begin
-          heroku.delete_app(app_name)
-          successfully_deleted_apps << app_name
-        rescue
-          failed_deleted_apps << app_name
+      async_app_actions[app_name] = Thread.new do
+        case params[:action]
+          when 'delete'
+            heroku.delete_app(app_name)
+            puts "Deleted " << app_name
+          else
+            raise 'Invalid app action'
         end
       end
     end
   end
 
-  @message = ""
-  unless successfully_deleted_apps.empty?
-    @message << "Successfully deleted " << successfully_deleted_apps.join(", ")
+  successes = []
+  failures = []
+  async_app_actions.each do |app_name, action|
+    begin
+      action.value
+      successes << app_name
+    rescue
+      failures << app_name
+    end
   end
-  unless failed_deleted_apps.empty?
-    @message << " Failed to delete " << failed_deleted_apps.join(", ")
+
+  @message = ""
+  unless successes.empty?
+    @message << "Successfully " << params[:action] << "d " << successes.join(", ")
+  end
+  unless failures.empty?
+    @message << " Failed to " << params[:action] << " " << failures.join(", ")
   end
 
   @apps = heroku.get_apps.body
