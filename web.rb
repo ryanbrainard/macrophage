@@ -59,7 +59,27 @@ end
 
 get '/apps' do
   heroku = Heroku::API.new(:api_key => session[:api_key])
-  @apps = heroku.get_apps.body
+  raw_apps = heroku.get_apps.body
+
+  field_map = {
+      'name'      => {:label => 'Name'},
+      'stack'     => {:label => 'Stack', :value => lambda {|v| v.capitalize}},
+      'git_url'   => {:label => 'Git URL'},
+  }
+
+  @apps = []
+  raw_apps.each do |raw_app|
+    app = {}
+    raw_app.each do |field_name, field_value|
+      if field_map.has_key? field_name
+        field_label = (field_map[field_name].has_key? :label) ? field_map[field_name][:label] : field_name
+        field_value = field_map[field_name][:value].call field_value if field_map[field_name].has_key? :value
+        app[field_label] = field_value
+      end
+    end
+    @apps << app
+  end
+
   erb :apps
 end
 
