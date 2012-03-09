@@ -4,7 +4,7 @@ require 'rack-flash'
 require 'heroku-api'
 require './lib/macrophage/pages'
 
-enable :sessions
+enable :sessions, :logging
 use Rack::Flash
 
 before do
@@ -27,14 +27,16 @@ post '/apps' do
                     |app_name| heroku.delete_app(app_name)
                 }}
              when 'maintenance_on'
-               {:label_present => 'enable maintenance mode for',
-                :label_past => 'enabled maintenance mode for',
+               {:label_present => 'enable maintenance mode',
+                :label_past => 'enabled maintenance mode',
+                :label_mod => 'for',
                 :execution => lambda { |app_name|
                   heroku.post_app_maintenance(app_name, 1)
                 }}
              when 'maintenance_off'
-               {:label_present => 'disable maintenance mode for',
-                :label_past => 'disabled maintenance mode for',
+               {:label_present => 'disable maintenance mode',
+                :label_past => 'disabled maintenance mode',
+                :label_mod => 'for',
                 :execution => lambda { |app_name|
                   heroku.post_app_maintenance(app_name, 0)
                 }}
@@ -48,9 +50,8 @@ post '/apps' do
     if param[0].match(/^actionable\//)
       app_name = param[0].split('/')[1]
       async_app_action_futures[app_name] = Thread.new do
-        puts "[#{app_name}]: starting #{action[:label_present]}"
         action[:execution].call(app_name)
-        puts "[#{app_name}]: completed #{action[:label_present]}"
+        logger.info "[#{app_name}]: #{action[:label_present]} enqueued"
       end
     end
   end
@@ -60,22 +61,24 @@ post '/apps' do
   failures = []
   async_app_action_futures.each do |app_name, action_future|
     begin
+      logger.info "[#{app_name}]: #{action[:label_present]} dequeued"
       action_future.value
-      puts "[#{app_name}]: starting #{action[:label_present]}"
       successes << app_name
+      logger.info "[#{app_name}]: #{action[:label_present]} completed"
     rescue Exception => e
-      puts e.message
-      puts e.backtrace.inspect
+      logger.error "[#{app_name}]: #{action[:label_present]} failed" +
+          e.message +
+          e.backtrace.inspect
       failures << app_name
     end
   end
 
   # prepare user messages
   unless successes.empty?
-    flash[:success] = "Successfully #{action[:label_past]} #{successes.join(", ")}"
+    flash[:success] = "Successfully #{action[:label_past]} #{action[:label_mod]} #{successes.join(", ")}"
   end
   unless failures.empty?
-    flash[:error] = "Failed to #{action[:label_past]} #{failures.join(", ")}"
+    flash[:error] = "Failed to #{action[:label_past]} #{action[:label_mod]} #{failures.join(", ")}"
   end
 
   redirect '/apps'
