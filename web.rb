@@ -48,7 +48,9 @@ post '/apps' do
     if param[0].match(/^actionable\//)
       app_name = param[0].split('/')[1]
       async_app_action_futures[app_name] = Thread.new do
+        puts "[#{app_name}]: starting #{action[:label_present]}"
         action[:execution].call(app_name)
+        puts "[#{app_name}]: completed #{action[:label_present]}"
       end
     end
   end
@@ -56,21 +58,24 @@ post '/apps' do
   # collect results
   successes = []
   failures = []
-  async_app_action_futures.each do |app_name, future|
+  async_app_action_futures.each do |app_name, action_future|
     begin
-      future.value
+      action_future.value
+      puts "[#{app_name}]: starting #{action[:label_present]}"
       successes << app_name
-    rescue
+    rescue Exception => e
+      puts e.message
+      puts e.backtrace.inspect
       failures << app_name
     end
   end
 
   # prepare user messages
   unless successes.empty?
-    flash[:success] = "Successfully " << action[:label_past] << " "<< successes.join(", ")
+    flash[:success] = "Successfully #{action[:label_past]} #{successes.join(", ")}"
   end
   unless failures.empty?
-    flash[:error] = " Failed to " << action[:label_present] << " " << failures.join(", ")
+    flash[:error] = "Failed to #{action[:label_past]} #{failures.join(", ")}"
   end
 
   redirect '/apps'

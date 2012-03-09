@@ -11,7 +11,7 @@
 
       <table class="table table-condensed table-striped row">
         <tr>
-          <th>Action</th>
+          <th></th>
           <% @apps[0].each do |header| %>
               <th><%= header[0] %></th>
           <% end %>
@@ -19,7 +19,7 @@
 
         <% @apps.each do |app| %>
             <tr>
-              <td><input type="checkbox" name="actionable/<%= app["name"] %>"/></td>
+              <td><input type="checkbox" name="actionable/<%= app["Name"] %>"/></td>
               <% app.each do |prop| %>
                   <td><%= prop[1] %></td>
               <% end %>
