@@ -61,6 +61,7 @@ get '/apps' do
   heroku = Heroku::API.new(:api_key => session[:api_key])
   raw_apps = heroku.get_apps.body
 
+  # this dictates the order of the fields, the label, and any conversion the value
   field_map = {
       'name'      => {:label => 'Name'},
       'stack'     => {:label => 'Stack', :value => lambda {|v| v.capitalize}},
@@ -70,12 +71,10 @@ get '/apps' do
   @apps = []
   raw_apps.each do |raw_app|
     app = {}
-    raw_app.each do |field_name, field_value|
-      if field_map.has_key? field_name
-        field_label = (field_map[field_name].has_key? :label) ? field_map[field_name][:label] : field_name
-        field_value = field_map[field_name][:value].call field_value if field_map[field_name].has_key? :value
-        app[field_label] = field_value
-      end
+    field_map.each do |field_name, conversions|
+      field_label = (conversions.has_key? :label) ? conversions[:label] : field_name
+      field_value = (conversions.has_key? :value) ? conversions[:value].call(raw_app[field_name]) : raw_app[field_name]
+      app[field_label] = field_value
     end
     @apps << app
   end
