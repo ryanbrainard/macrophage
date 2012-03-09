@@ -1,27 +1,36 @@
 <form method="post">
-  <div>
-    <!--<input type="submit" name="action" value="view" class="btn-info">-->
-    <input type="submit" name="action" value="delete" class="btn-danger">
+
+  <div class="row">
     <% if @message %>
-        <span class="alert" style="margin-left: 10px"><%= @message %></span>
+        <span class="alert"><%= @message %></span>
     <% end %>
   </div>
 
-  <table class="table table-condensed table-striped">
-    <tr>
-      <th>Action</th>
-      <% @apps[0].each do |header| %>
-          <th><%= header[0] %></th>
-      <% end %>
-    </tr>
+  <% if !@apps.empty? %>
+      <div class="row">
+        <button type="submit" name="action" value="maintenance_on" class="btn btn-warning">Enable Maintenance Mode</button>
+        <button type="submit" name="action" value="maintenance_off" class="btn btn-success">Disable Maintenance Mode</button>
+        <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
+      </div>
 
-    <% @apps.each do |app| %>
+      <div class="row">&nbsp;</div>
+
+      <table class="table table-condensed table-striped row">
         <tr>
-          <td><input type="checkbox" name="actionable/<%= app["name"] %>"/></td>
-          <% app.each do |prop| %>
-              <td><%= prop[1] %></td>
+          <th>Action</th>
+          <% @apps[0].each do |header| %>
+              <th><%= header[0] %></th>
           <% end %>
         </tr>
-    <% end %>
-  </table>
+
+        <% @apps.each do |app| %>
+            <tr>
+              <td><input type="checkbox" name="actionable/<%= app["name"] %>"/></td>
+              <% app.each do |prop| %>
+                  <td><%= prop[1] %></td>
+              <% end %>
+            </tr>
+        <% end %>
+      </table>
+  <% end %>
 </form>

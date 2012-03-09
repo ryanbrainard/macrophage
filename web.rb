@@ -18,39 +18,60 @@ end
 post '/apps' do
   heroku = Heroku::API.new(:api_key => session[:api_key])
 
-  async_app_actions = {}
+  # find the action we need
+  action = case params[:action]
+             when 'delete'
+               {:label_present => 'delete',
+                :label_past => 'deleted',
+                :execution => lambda {
+                    |app_name| heroku.delete_app(app_name)
+                }}
+             when 'maintenance_on'
+               {:label_present => 'enable maintenance mode for',
+                :label_past => 'enabled maintenance mode for',
+                :execution => lambda { |app_name|
+                  heroku.post_app_maintenance(app_name, 1)
+                }}
+             when 'maintenance_off'
+               {:label_present => 'disable maintenance mode for',
+                :label_past => 'disabled maintenance mode for',
+                :execution => lambda { |app_name|
+                  heroku.post_app_maintenance(app_name, 0)
+                }}
+             else
+               raise 'Invalid app action'
+           end
+
+  # fire off the threads
+  async_app_action_futures = {}
   params.each do |param|
     if param[0].match(/^actionable\//)
-      app_name =  param[0].split('/')[1]
-      async_app_actions[app_name] = Thread.new do
-        case params[:action]
-          when 'delete'
-            heroku.delete_app(app_name)
-            puts "Deleted " << app_name
-          else
-            raise 'Invalid app action'
-        end
+      app_name = param[0].split('/')[1]
+      async_app_action_futures[app_name] = Thread.new do
+        action[:execution].call(app_name)
       end
     end
   end
 
+  # collect results
   successes = []
   failures = []
-  async_app_actions.each do |app_name, action|
+  async_app_action_futures.each do |app_name, future|
     begin
-      action.value
+      future.value
       successes << app_name
     rescue
       failures << app_name
     end
   end
 
+  # prepare user messages
   @message = ""
   unless successes.empty?
-    @message << "Successfully " << params[:action] << "d " << successes.join(", ")
+    @message << "Successfully " << action[:label_past] << " "<< successes.join(", ")
   end
   unless failures.empty?
-    @message << " Failed to " << params[:action] << " " << failures.join(", ")
+    @message << " Failed to " << action[:label_present] << " " << failures.join(", ")
   end
 
   @apps = heroku.get_apps.body
@@ -63,12 +84,12 @@ get '/apps' do
 
   # this dictates the order of the fields, the label, and any conversion the value
   field_map = {
-      'name'      => {:label => 'Name'},
-      'stack'     => {:label => 'Stack', :value => lambda {|stack| stack.capitalize}},
-      'dynos'     => {:label => 'Dynos'},
-      'workers'   => {:label => 'Workers'},
-      'git_url'   => {:label => 'Git URL'},
-      'web_url'   => {:label => 'URL', :value => lambda {|url| "<a href='#{url}' target='_blank'>#{url}</a>"}},
+      'name' => {:label => 'Name'},
+      'stack' => {:label => 'Stack', :value => lambda { |stack| stack.capitalize }},
+      'dynos' => {:label => 'Dynos'},
+      'workers' => {:label => 'Workers'},
+      'git_url' => {:label => 'Git URL'},
+      'web_url' => {:label => 'URL', :value => lambda { |url| "<a href='#{url}' target='_blank'>#{url}</a>" }},
   }
 
   @apps = []
@@ -80,6 +101,10 @@ get '/apps' do
       app[field_label] = field_value
     end
     @apps << app
+  end
+
+  if @apps.empty?
+    @message = 'No apps? Go create some!'
   end
 
   erb :apps
