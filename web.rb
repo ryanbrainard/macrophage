@@ -64,8 +64,11 @@ get '/apps' do
   # this dictates the order of the fields, the label, and any conversion the value
   field_map = {
       'name'      => {:label => 'Name'},
-      'stack'     => {:label => 'Stack', :value => lambda {|v| v.capitalize}},
+      'stack'     => {:label => 'Stack', :value => lambda {|stack| stack.capitalize}},
+      'dynos'     => {:label => 'Dynos'},
+      'workers'   => {:label => 'Workers'},
       'git_url'   => {:label => 'Git URL'},
+      'web_url'   => {:label => 'URL', :value => lambda {|url| "<a href='#{url}' target='_blank'>#{url}</a>"}},
   }
 
   @apps = []
