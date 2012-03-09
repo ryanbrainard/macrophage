@@ -1,30 +1,41 @@
-<form method="post">
-
+<form id="app_action_form" method="post">
+  <input name="action" type="hidden"/>
   <% if !@apps.empty? %>
       <div class="row">
-        <button type="submit" name="action" value="maintenance_on" class="btn btn-warning">Enable Maintenance Mode</button>
-        <button type="submit" name="action" value="maintenance_off" class="btn btn-success">Disable Maintenance Mode</button>
-        <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
-      </div>
+        <div class="btn-toolbar">
+          <div class="btn-group">
+            <button class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+              Maintenance Mode
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+              <li><a href="#" onclick="$('#app_action_form input[name=action]').val('maintenance_on');  $('#app_action_form').submit();">Enable</a></li>
+              <li><a href="#" onclick="$('#app_action_form input[name=action]').val('maintenance_off'); $('#app_action_form').submit();">Disable</a></li>
+            </ul>
+          </div>
+          <div class="btn-group">
+              <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
+          </div>
+        </div>
 
-      <div class="row">&nbsp;</div>
+        <div class="row">&nbsp;</div>
 
-      <table class="table table-condensed table-striped row">
-        <tr>
-          <th></th>
-          <% @apps[0].each do |header| %>
-              <th><%= header[0] %></th>
+        <table class="table table-condensed table-striped row">
+          <tr>
+            <th></th>
+            <% @apps[0].each do |header| %>
+                <th><%= header[0] %></th>
+            <% end %>
+          </tr>
+
+          <% @apps.each do |app| %>
+              <tr>
+                <td><input type="checkbox" name="actionable/<%= app["Name"] %>"/></td>
+                <% app.each do |prop| %>
+                    <td><%= prop[1] %></td>
+                <% end %>
+              </tr>
           <% end %>
-        </tr>
-
-        <% @apps.each do |app| %>
-            <tr>
-              <td><input type="checkbox" name="actionable/<%= app["Name"] %>"/></td>
-              <% app.each do |prop| %>
-                  <td><%= prop[1] %></td>
-              <% end %>
-            </tr>
-        <% end %>
-      </table>
+        </table>
   <% end %>
 </form>
