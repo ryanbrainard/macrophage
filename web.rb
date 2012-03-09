@@ -66,16 +66,14 @@ post '/apps' do
   end
 
   # prepare user messages
-  @message = ""
   unless successes.empty?
-    @message << "Successfully " << action[:label_past] << " "<< successes.join(", ")
+    flash[:success] = "Successfully " << action[:label_past] << " "<< successes.join(", ")
   end
   unless failures.empty?
-    @message << " Failed to " << action[:label_present] << " " << failures.join(", ")
+    flash[:error] = " Failed to " << action[:label_present] << " " << failures.join(", ")
   end
 
-  @apps = heroku.get_apps.body
-  erb :apps
+  redirect '/apps'
 end
 
 get '/apps' do
@@ -104,7 +102,7 @@ get '/apps' do
   end
 
   if @apps.empty?
-    @message = 'No apps? Go create some!'
+    flash[:info] = 'No apps? Go create some!'
   end
 
   erb :apps

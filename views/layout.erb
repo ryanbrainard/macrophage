@@ -52,11 +52,16 @@
 </div>
 
 <div class="container">
-  <% if flash[:error] %>
-      <div class="alert alert-error">
-        <%= flash[:error] %>
-      </div>
-  <% end %>
+  <div class="row">
+    <% [:error, :success, :info].each do |alert| %>
+        <% next unless flash.has? alert %>
+        <div class="alert alert-<%= alert.to_s %>">
+          <!--<a class="close" data-dismiss="alert">×</a>-->
+          <%= flash[alert] %>
+        </div>
+    <% end %>
+  </div>
+
   <%= yield %>
 </div> <!-- /container -->
 

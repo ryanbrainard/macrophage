@@ -1,11 +1,5 @@
 <form method="post">
 
-  <div class="row">
-    <% if @message %>
-        <span class="alert"><%= @message %></span>
-    <% end %>
-  </div>
-
   <% if !@apps.empty? %>
       <div class="row">
         <button type="submit" name="action" value="maintenance_on" class="btn btn-warning">Enable Maintenance Mode</button>
