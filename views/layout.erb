@@ -37,16 +37,18 @@
         <span class="icon-bar"></span>
       </a>
       <a class="brand" href="#">Macrophage</a>
-      <div class="nav-collapse">
-        <ul class="nav">
-          <% Macrophage::Pages.each do |page| %>
-              <li<%= (page.path == request.path) ? " class=\"active\"" : "" %>><a href="<%= page.path %>"><%= page.title %></a></li>
-          <% end %>
-        </ul>
-        <ul class="nav pull-right">
-          <li><a><%= session[:email]  %></a></li>
-        </ul>
-      </div><!--/.nav-collapse -->
+      <% if session[:api_key] %>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <% Macrophage::Pages.each do |page| %>
+                  <li<%= (page.path == request.path) ? " class=\"active\"" : "" %>><a href="<%= page.path %>"><%= page.title %></a></li>
+              <% end %>
+            </ul>
+            <ul class="nav pull-right">
+              <li><a><%= session[:email]  %></a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+      <% end %>
     </div>
   </div>
 </div>
