@@ -68,6 +68,7 @@ module Macrophage
           'owner_email' => {:label => 'Owner', :value => lambda { |email| "<a href='mailto:#{email}'>#{email}</a>" }},
           'git_url' => {:label => 'Git URL'},
           'web_url' => {:label => 'Web URL', :value => lambda { |url| "<a href='#{url}' target='_blank'>#{url}</a>" }},
+          'created_at' => {:label => 'Created Date'},
       }
 
       @apps = []
