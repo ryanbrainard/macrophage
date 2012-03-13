@@ -9,12 +9,12 @@
               <span class="caret"></span>
             </button>
             <ul class="dropdown-menu">
-              <li><a href="#" onclick="$('#app_action_form input[name=action]').val('maintenance_on');  $('#app_action_form').submit();">Enable</a></li>
-              <li><a href="#" onclick="$('#app_action_form input[name=action]').val('maintenance_off'); $('#app_action_form').submit();">Disable</a></li>
+              <li><a href="#" onclick="$('#app_action_form input[name=action]').val('MaintenanceOn');  $('#app_action_form').submit();">Enable</a></li>
+              <li><a href="#" onclick="$('#app_action_form input[name=action]').val('MaintenanceOff'); $('#app_action_form').submit();">Disable</a></li>
             </ul>
           </div>
           <div class="btn-group">
-              <button type="submit" name="action" value="delete" class="btn btn-danger">Delete</button>
+              <button type="submit" name="action" value="Delete" class="btn btn-danger">Delete</button>
           </div>
         </div>
 
@@ -37,5 +37,6 @@
               </tr>
           <% end %>
         </table>
+      </div>
   <% end %>
 </form>

@@ -13,32 +13,9 @@ module Macrophage
 
     post '/apps' do
       heroku = Heroku::API.new(:api_key => session[:api_key])
+      action = Object::const_get('Macrophage').const_get(params[:action] + 'Action').new
 
-      # find the action we need
-      action = case params[:action]
-                 when 'delete'
-                   {:label_present => 'delete',
-                    :label_past => 'deleted',
-                    :execution => lambda {
-                        |app_name| heroku.delete_app(app_name)
-                    }}
-                 when 'maintenance_on'
-                   {:label_present => 'enable maintenance mode',
-                    :label_past => 'enabled maintenance mode',
-                    :label_mod => 'for',
-                    :execution => lambda { |app_name|
-                      heroku.post_app_maintenance(app_name, 1)
-                    }}
-                 when 'maintenance_off'
-                   {:label_present => 'disable maintenance mode',
-                    :label_past => 'disabled maintenance mode',
-                    :label_mod => 'for',
-                    :execution => lambda { |app_name|
-                      heroku.post_app_maintenance(app_name, 0)
-                    }}
-                 else
-                   raise 'Invalid app action'
-               end
+      # TODO: check if correct action type
 
       # fire off the threads
       async_app_action_futures = {}
@@ -46,9 +23,9 @@ module Macrophage
         if param[0].match(/^actionable\//)
           app_name = param[0].split('/')[1]
           async_app_action_futures[app_name] = Thread.new do
-            action[:execution].call(app_name)
-            logger.info "[#{app_name}]: #{action[:label_present]} enqueued"
+            action.execute(heroku, app_name)
           end
+          logger.info "[#{app_name}]: #{action.label_present} enqueued"
         end
       end
 
@@ -57,12 +34,12 @@ module Macrophage
       failures = []
       async_app_action_futures.each do |app_name, action_future|
         begin
-          logger.info "[#{app_name}]: #{action[:label_present]} dequeued"
+          logger.info "[#{app_name}]: #{action.label_present} dequeued"
           action_future.value
           successes << app_name
-          logger.info "[#{app_name}]: #{action[:label_present]} completed"
+          logger.info "[#{app_name}]: #{action.label_present} completed"
         rescue Exception => e
-          logger.error "[#{app_name}]: #{action[:label_present]} failed" +
+          logger.error "[#{app_name}]: #{action.label_present} failed" +
               e.message +
               e.backtrace.inspect
           failures << app_name
@@ -71,10 +48,10 @@ module Macrophage
 
       # prepare user messages
       unless successes.empty?
-        flash[:success] = "Successfully #{action[:label_past]} #{action[:label_mod]} #{successes.join(", ")}"
+        flash[:success] = "Successfully #{action.label_past} #{action.label_mod} #{successes.join(", ")}"
       end
       unless failures.empty?
-        flash[:error] = "Failed to #{action[:label_past]} #{action[:label_mod]} #{failures.join(", ")}"
+        flash[:error] = "Failed to #{action.label_past} #{action.label_mod} #{failures.join(", ")}"
       end
 
       redirect '/apps'
