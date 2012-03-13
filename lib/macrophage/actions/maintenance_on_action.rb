@@ -1,4 +1,4 @@
-module Macrophage
+module Macrophage::Actions
   class MaintenanceOnAction < BaseAction
     def label_present
       'enable maintenance mode'

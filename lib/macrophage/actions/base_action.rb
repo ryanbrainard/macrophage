@@ -1,4 +1,4 @@
-module Macrophage
+module Macrophage::Actions
   class BaseAction
     def label_present
       raise 'Abstract: Implement in subclass'

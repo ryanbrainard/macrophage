@@ -1,4 +1,4 @@
-module Macrophage
+module Macrophage::Actions
   class DeleteAction < BaseAction
     def label_present
       'delete'

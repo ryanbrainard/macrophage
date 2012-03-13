@@ -13,7 +13,7 @@ module Macrophage
 
     post '/apps' do
       heroku = Heroku::API.new(:api_key => session[:api_key])
-      action = Object::const_get('Macrophage').const_get(params[:action] + 'Action').new
+      action = Object::const_get('Macrophage').const_get('Actions').const_get(params[:action] + 'Action').new
 
       # TODO: check if correct action type
 
