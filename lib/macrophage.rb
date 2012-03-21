@@ -1,5 +1,3 @@
-$LOAD_PATH << './lib'
-
 require 'sinatra'
 require 'sinatra/base'
 require 'rack-flash'

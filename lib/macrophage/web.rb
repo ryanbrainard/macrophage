@@ -2,6 +2,8 @@ module Macrophage
   class Web < Sinatra::Base
     enable :sessions, :logging
     use Rack::Flash
+    set :public_folder, File.dirname(__FILE__) + '/../../public'
+    set :views, File.dirname(__FILE__) + '/../../views'
 
     before do
       unless request.path_info == '/login'
