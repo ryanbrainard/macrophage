@@ -5,8 +5,8 @@ module Macrophage
     set :public_folder, File.dirname(__FILE__) + '/../../public'
     set :views, File.dirname(__FILE__) + '/../../views'
 
-    before do
-      unless request.path_info == '/login'
+    helpers do
+      def protected!
         unless (session.has_key? :api_key) && (session[:api_key].length > 0)
           redirect "/login"
         end
@@ -14,6 +14,7 @@ module Macrophage
     end
 
     post '/apps' do
+      protected!
       heroku = Heroku::API.new(:api_key => session[:api_key])
       action = Object::const_get('Macrophage').const_get('Actions').const_get(params[:action] + 'Action').new
 
@@ -60,6 +61,7 @@ module Macrophage
     end
 
     get '/apps' do
+      protected!
       heroku = Heroku::API.new(:api_key => session[:api_key])
       raw_apps = heroku.get_apps.body
 
@@ -113,8 +115,8 @@ module Macrophage
       redirect "/login"
     end
 
-    get '/*' do
-      redirect "/login"
+    get '/' do
+      redirect "/apps"
     end
   end
 end
