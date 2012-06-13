@@ -13,7 +13,9 @@ module Macrophage
       end
 
       def heroku(api_key = session[:api_key])
-        Heroku::API.new(:api_key => api_key)
+        Excon.defaults[:ssl_verify_peer] = false
+        Heroku::API.new(:api_key => api_key,
+                        :host => "api.staging.herokudev.com")
       end
     end
 
@@ -121,3 +123,5 @@ module Macrophage
     end
   end
 end
+
+#Unable to verify certificate, please set `Excon.defaults[:ssl_ca_path] = path_to_certs`, `Excon.defaults[:ssl_ca_file] = path_to_file`, or `Excon.defaults[:ssl_verify_peer] = false` (less secure).
