@@ -11,11 +11,14 @@ module Macrophage
           redirect "/login"
         end
       end
+
+      def heroku(api_key = session[:api_key])
+        Heroku::API.new(:api_key => api_key)
+      end
     end
 
     post '/apps' do
       protected!
-      heroku = Heroku::API.new(:api_key => session[:api_key])
       action = Object::const_get('Macrophage').const_get('Actions').const_get(params[:action] + 'Action').new
 
       # TODO: check if correct action type
@@ -62,7 +65,6 @@ module Macrophage
 
     get '/apps' do
       protected!
-      heroku = Heroku::API.new(:api_key => session[:api_key])
       raw_apps = heroku.get_apps.body
 
       # this dictates the order of the fields, the label, and any conversion the value
@@ -99,8 +101,7 @@ module Macrophage
 
     post '/login' do
       begin
-        heroku = Heroku::API.new(:api_key => params[:api_key])
-        user_info = heroku.get_user.body
+        user_info = heroku(params[:api_key]).get_user.body
         session[:email] = user_info['email']
         session[:api_key] = params[:api_key]
         redirect "/apps"
