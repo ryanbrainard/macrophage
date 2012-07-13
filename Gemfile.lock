@@ -1,6 +1,7 @@
 GIT
-  remote: git@github.com:heroku/heroku.rb.git
-  revision: 170aefa1a806b876473aebd878ee119612f66ad3
+  remote: https://github.com/heroku/heroku.rb.git
+  revision: f20612f18ac8549c46d7bad08b690a43d1ad6a29
+  tag: v0.1.0
   specs:
     heroku-api (0.1.0)
       excon (~> 0.9.4)
