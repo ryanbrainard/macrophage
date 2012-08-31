@@ -4,7 +4,9 @@
       var check = document.getElementById("actionableSelectAll").checked;
       var inputs = document.getElementsByTagName("input");
       for (var i=0; i < inputs.length; i++) {
-          if (inputs[i].getAttribute('type') == 'checkbox') {
+          var name = inputs[i].getAttribute('name');
+          var type = inputs[i].getAttribute('type');
+          if (type == 'checkbox' && name != null && name.indexOf("actionable/") == 0) {
               inputs[i].checked = check;
           }
       }
