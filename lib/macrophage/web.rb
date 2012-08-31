@@ -96,6 +96,10 @@ module Macrophage
         flash[:info] = 'No apps? Go create some!'
       end
 
+      @apps = @apps.sort_by do |a|
+        a['Name']
+      end
+
       erb :apps
     end
 
