@@ -79,6 +79,10 @@ module Macrophage
 
       @apps = []
       raw_apps.each do |raw_app|
+        if raw_app['owner_email'] != session[:email]
+          next
+        end
+
         app = {}
         field_map.each do |field_name, conversions|
           field_label = (conversions.has_key? :label) ? conversions[:label] : field_name
