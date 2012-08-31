@@ -101,7 +101,11 @@ module Macrophage
 
     post '/login' do
       begin
-        user_info = heroku(params[:api_key]).get_user.body
+        user_info = heroku(params[:api_key]).request(
+            :expects  => 200,
+            :method   => :get,
+            :path     => "/user"
+        ).body
         session[:email] = user_info['email']
         session[:api_key] = params[:api_key]
         redirect "/apps"
