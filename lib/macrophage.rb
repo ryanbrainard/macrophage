@@ -2,6 +2,7 @@ require 'sinatra'
 require 'sinatra/base'
 require 'rack-flash'
 require 'heroku-api'
+require 'rest-client'
 
 require 'macrophage/pages'
 

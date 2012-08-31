@@ -6,9 +6,26 @@ module Macrophage
     set :views, File.dirname(__FILE__) + '/../../views'
 
     helpers do
+      def authenticate(token)
+        begin
+          user_info = heroku(token).request(
+              :expects  => 200,
+              :method   => :get,
+              :path     => "/user"
+          ).body
+          session[:email] = user_info['email']
+          session[:api_key] = token
+          redirect "/apps"
+        rescue
+          flash[:error] = "Invalid Token"
+          redirect "/logout"
+        end
+      end
+
       def protected!
         unless (session.has_key? :api_key) && (session[:api_key].length > 0)
-          redirect "/login"
+          #redirect "/login"
+          redirect "https://api.heroku.com/oauth/authorize?client_id=#{ENV['HEROKU_OAUTH_CLIENT_ID']}&response_type=code"
         end
       end
 
@@ -108,19 +125,20 @@ module Macrophage
     end
 
     post '/login' do
-      begin
-        user_info = heroku(params[:api_key]).request(
-            :expects  => 200,
-            :method   => :get,
-            :path     => "/user"
-        ).body
-        session[:email] = user_info['email']
-        session[:api_key] = params[:api_key]
-        redirect "/apps"
-      rescue
-        flash[:error] = "Invalid API Key"
-        redirect "/logout"
-      end
+      authenticate params[:api_key]
+    end
+
+    get '/oauth/heroku' do
+      authJson = RestClient.post "https://api.heroku.com/oauth/token",  {
+          :grant_type => "authorization_code",
+          :client_id => ENV['HEROKU_OAUTH_CLIENT_ID'],
+          :client_secret => ENV['HEROKU_OAUTH_CLIENT_SECRET'],
+          :code => params[:code]
+      }
+
+      auth = Heroku::API::OkJson.decode(authJson)
+      puts auth.inspect
+      authenticate auth["access_token"]
     end
 
     get '/logout' do
