@@ -6,15 +6,20 @@ module Macrophage
     set :views, File.dirname(__FILE__) + '/../../views'
 
     helpers do
-      def authenticate(token)
+      def heroku_host
+        session[:heroku_host] || ENV['HEROKU_HOST'] || "heroku.com"
+      end
+
+      def start_session(token, heroku_host)
         begin
-          user_info = heroku(token).request(
+          session[:api_key] = token
+          session[:heroku_host] = heroku_host
+          user_info = heroku.request(
               :expects  => 200,
               :method   => :get,
               :path     => "/user"
           ).body
           session[:email] = user_info['email']
-          session[:api_key] = token
           redirect "/apps"
         rescue
           flash[:error] = "Invalid Token"
@@ -25,12 +30,13 @@ module Macrophage
       def protected!
         unless (session.has_key? :api_key) && (session[:api_key].length > 0)
           #redirect "/login"
-          redirect "https://api.heroku.com/oauth/authorize?client_id=#{ENV['HEROKU_OAUTH_CLIENT_ID']}&response_type=code"
+          redirect "https://api.#{heroku_host}/oauth/authorize?client_id=#{ENV['HEROKU_OAUTH_CLIENT_ID']}&response_type=code"
         end
       end
 
-      def heroku(api_key = session[:api_key])
-        Heroku::API.new(:api_key => api_key)
+      def heroku()
+        Excon.defaults[:ssl_verify_peer] = false
+        Heroku::API.new(:api_key => session[:api_key], :host => "api.#{heroku_host}")
       end
     end
 
@@ -125,11 +131,11 @@ module Macrophage
     end
 
     post '/login' do
-      authenticate params[:api_key]
+      start_session params[:api_key], params[:heroku_host]
     end
 
     get '/oauth/heroku' do
-      authJson = RestClient.post "https://api.heroku.com/oauth/token",  {
+      authJson = RestClient.post "https://api.#{heroku_host}/oauth/token",  {
           :grant_type => "authorization_code",
           :client_id => ENV['HEROKU_OAUTH_CLIENT_ID'],
           :client_secret => ENV['HEROKU_OAUTH_CLIENT_SECRET'],
@@ -137,8 +143,7 @@ module Macrophage
       }
 
       auth = Heroku::API::OkJson.decode(authJson)
-      puts auth.inspect
-      authenticate auth["access_token"]
+      start_session auth["access_token"], heroku_host
     end
 
     get '/logout' do
