@@ -1,4 +1,4 @@
-source :rubygems
+source 'https://rubygems.org'
 gem 'rack', '1.3.6'
 gem 'sinatra', '1.3.2'
 gem 'rack-flash', '0.1.2'
