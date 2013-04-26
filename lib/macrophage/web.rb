@@ -30,7 +30,7 @@ module Macrophage
       def protected!
         unless (session.has_key? :api_key) && (session[:api_key].length > 0)
           #redirect "/login"
-          redirect "https://api.#{heroku_host}/oauth/authorize?client_id=#{ENV['HEROKU_OAUTH_CLIENT_ID']}&response_type=code"
+          redirect "https://id.#{heroku_host}/oauth/authorize?client_id=#{ENV['HEROKU_OAUTH_CLIENT_ID']}&response_type=code"
         end
       end
 
@@ -135,7 +135,7 @@ module Macrophage
     end
 
     get '/oauth/heroku' do
-      authJson = RestClient.post "https://api.#{heroku_host}/oauth/token",  {
+      authJson = RestClient.post "https://id.#{heroku_host}/oauth/token",  {
           :grant_type => "authorization_code",
           :client_id => ENV['HEROKU_OAUTH_CLIENT_ID'],
           :client_secret => ENV['HEROKU_OAUTH_CLIENT_SECRET'],
